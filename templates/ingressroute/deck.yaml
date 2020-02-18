@@ -1,0 +1,49 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: spin-deck-https
+  namespace: spinnaker
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - match: Host(`spinnaker.qikqiak.com`)
+    kind: Rule
+    services:
+    - name: spin-deck
+      port: 9000
+  tls:
+    certResolver: ali
+    domains:
+    - main: "*.qikqiak.com"
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: spinnaker
+spec:
+  redirectScheme:
+    scheme: https
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: spin-deck-http
+  namespace: spinnaker
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: Host(`spinnaker.qikqiak.com`)
+    kind: Rule
+    services:
+    - name: spin-deck
+      port: 9000
+    middlewares: 
+    - name: redirect-https
+
+
